@@ -70,7 +70,7 @@ export const orders = [
     product: 'Зимняя куртка',
     quantity: 5000,
     completed: 4250,
-    status: 'in-progress',
+    status: 'in_progress',
     deadline: '2024-02-15',
     priority: 'high',
     assignedFactories: [1, 2],
@@ -83,7 +83,7 @@ export const orders = [
     product: 'Летнее платье',
     quantity: 3000,
     completed: 1800,
-    status: 'in-progress',
+    status: 'in_progress',
     deadline: '2024-02-20',
     priority: 'medium',
     assignedFactories: [3],
@@ -119,7 +119,7 @@ export const orders = [
   {
     id: 'ORD-2024-005',
     client: 'Торговая сеть Г',
-    product: 'Ф футболка',
+    product: 'Футболка',
     quantity: 6000,
     completed: 0,
     status: 'pending',
@@ -269,29 +269,22 @@ export const employees = [
 
 export const financialData = {
   today: {
-    revenue: 475000,
-    expenses: 312000,
-    profit: 163000,
-    cashIn: 520000,
-    cashOut: 295000,
+    revenue: 0,
+    expenses: 0,
+    profit: 0,
+    cashIn: 0,
+    cashOut: 0,
   },
   thisMonth: {
-    revenue: 12500000,
-    expenses: 8200000,
-    profit: 4300000,
-    cashIn: 11200000,
-    cashOut: 8900000,
-    projectedProfit: 4800000,
+    revenue: 0,
+    expenses: 0,
+    profit: 0,
+    cashIn: 0,
+    cashOut: 0,
+    projectedProfit: 0,
   },
   transactions: [
-    { id: 1, type: 'revenue', category: 'Оплата заказа', amount: 320000, date: '2024-01-31', description: 'ORD-2024-003 Оплата' },
-    { id: 2, type: 'expense', category: 'Зарплата', amount: 245000, date: '2024-01-31', description: 'Зарплата за месяц - Фабрика Альфа' },
-    { id: 3, type: 'revenue', category: 'Оплата заказа', amount: 200000, date: '2024-01-30', description: 'ORD-2024-001 Частичная оплата' },
-    { id: 4, type: 'expense', category: 'Материалы', amount: 156000, date: '2024-01-30', description: 'Закупка ткани - Зимние куртки' },
-    { id: 5, type: 'revenue', category: 'Оплата заказа', amount: 280000, date: '2024-01-29', description: 'ORD-2024-002 Предоплата' },
-    { id: 6, type: 'expense', category: 'Оборудование', amount: 45000, date: '2024-01-29', description: 'Обслуживание оборудования' },
-    { id: 7, type: 'expense', category: 'Коммунальные', amount: 38000, date: '2024-01-28', description: 'Электричество и вода' },
-    { id: 8, type: 'revenue', category: 'Оплата заказа', amount: 150000, date: '2024-01-28', description: 'ORD-2024-001 Оплата за этап' },
+    { id: 1, type: 'revenue' as const, category: 'Начните работу', amount: 0, date: '01.01.2024', description: 'Добавьте первый заказ' },
   ],
   profitHistory: [
     { month: 'Июл 2023', profit: 3200000 },
@@ -329,10 +322,7 @@ export const analytics = {
     { name: 'Елена Козлова', factory: 'Фабрика Бета', score: 88.6 },
   ],
   alerts: [
-    { type: 'warning', message: 'Фабрика Эпсилон ниже целевого показателя эффективности (65% vs 75%)', time: '2 часа назад' },
-    { type: 'danger', message: 'Заказ ORD-2024-004 задерживается - отстаёт от графика', time: '4 часа назад' },
-    { type: 'info', message: 'Прогнозируется нехватка материалов для производства Зимней куртки', time: '6 часов назад' },
-    { type: 'success', message: 'Заказ ORD-2024-003 завершён досрочно', time: '1 день назад' },
+    { type: 'info', message: 'Добро пожаловать! Начните работу с раздела Производство', time: 'Сейчас' },
   ],
 };
 
@@ -341,8 +331,33 @@ export const keyMetrics = {
   totalEmployees: 686,
   totalCapacity: 900,
   activeOrders: 4,
-  monthlyRevenue: 12500000,
-  monthlyProfit: 4300000,
+  monthlyRevenue: 0,
+  monthlyProfit: 0,
   avgEfficiency: 81.2,
   defectRate: 0.08,
+};
+
+// User management for phone registration
+export interface User {
+  id: string;
+  phone: string;
+  name: string;
+  role: 'admin' | 'user';
+  createdAt: string;
+}
+
+export const getUsers = (): User[] => {
+  if (typeof window === 'undefined') return [];
+  const users = localStorage.getItem('users');
+  return users ? JSON.parse(users) : [];
+};
+
+export const saveUser = (user: User) => {
+  const users = getUsers();
+  users.push(user);
+  localStorage.setItem('users', JSON.stringify(users));
+};
+
+export const generateVerificationCode = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };

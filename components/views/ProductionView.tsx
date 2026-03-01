@@ -20,7 +20,7 @@ export default function ProductionView() {
     switch (status) {
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'in-progress':
+      case 'in_progress':
         return <TrendingUp className="w-4 h-4 text-blue-600" />;
       case 'delayed':
         return <AlertCircle className="w-4 h-4 text-red-600" />;
@@ -31,11 +31,21 @@ export default function ProductionView() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed': return 'Выполнен';
+      case 'in_progress': return 'В процессе';
+      case 'delayed': return 'Задержан';
+      case 'pending': return 'Ожидает';
+      default: return status;
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-700 border-green-200';
-      case 'in-progress':
+      case 'in_progress':
         return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'delayed':
         return 'bg-red-100 text-red-700 border-red-200';
@@ -120,7 +130,7 @@ export default function ProductionView() {
                 <span className="text-sm text-gray-600">В процессе</span>
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {orders.filter((o) => o.status === 'in-progress').length}
+                {orders.filter((o) => o.status === 'in_progress').length}
               </p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -181,7 +191,7 @@ export default function ProductionView() {
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(order.status)}`}>
                         {getStatusIcon(order.status)}
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace('-', ' ')}
+                        {getStatusLabel(order.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{order.deadline}</td>
