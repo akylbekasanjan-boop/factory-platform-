@@ -63,10 +63,11 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 text-xl border-3 border-gray-400 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white text-black"
+                className="w-full pl-12 pr-4 py-4 text-xl border-3 border-gray-500 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white"
                 placeholder="Введите логин"
                 required
-                autoComplete="username"
+                autoComplete="off"
+                style={{ color: 'black', WebkitTextFillColor: 'black', fontWeight: 'bold' }}
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,10 +88,11 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-12 py-4 text-xl border-3 border-gray-400 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white text-black"
+                className="w-full pl-12 pr-12 py-4 text-xl border-3 border-gray-500 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white"
                 placeholder="Введите пароль"
                 required
-                autoComplete="current-password"
+                autoComplete="off"
+                style={{ color: 'black', WebkitTextFillColor: 'black', fontWeight: 'bold' }}
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
