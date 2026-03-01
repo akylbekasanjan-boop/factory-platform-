@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Factory, LogIn } from 'lucide-react';
+import { Factory, LogIn, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -16,7 +17,6 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Demo credentials
     if (username === 'admin' && password === 'admin123') {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('username', username);
@@ -63,13 +63,13 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all bg-white"
+                className="w-full pl-12 pr-4 py-4 text-xl border-3 border-gray-400 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white text-black"
                 placeholder="Введите логин"
-                style={{ color: '#111827', fontWeight: 500 }}
                 required
+                autoComplete="username"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -84,26 +84,33 @@ export default function LoginPage() {
             <div className="relative">
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all bg-white"
+                className="w-full pl-12 pr-12 py-4 text-xl border-3 border-gray-400 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white text-black"
                 placeholder="Введите пароль"
-                style={{ color: '#111827', fontWeight: 500 }}
                 required
+                autoComplete="current-password"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+              </button>
             </div>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="bg-red-50 border border-red-300 rounded-lg p-3">
+              <p className="text-base text-red-700 font-medium">{error}</p>
             </div>
           )}
 

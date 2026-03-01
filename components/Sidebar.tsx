@@ -23,8 +23,8 @@ interface SidebarProps {
 }
 
 const menuItems: { id: ViewType; label: string; icon: any }[] = [
-  { id: 'dashboard', label: '📊 Дашборд', icon: LayoutDashboard },
   { id: 'production', label: '🏭 Производство', icon: Package },
+  { id: 'dashboard', label: '📊 Дашборд', icon: LayoutDashboard },
   { id: 'hr', label: '👥 Сотрудники', icon: Users },
   { id: 'finance', label: '💰 Финансы', icon: DollarSign },
   { id: 'analytics', label: '📈 Аналитика', icon: BarChart3 },

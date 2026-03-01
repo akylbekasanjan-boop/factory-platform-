@@ -15,7 +15,7 @@ import { ViewType } from '@/lib/types';
 export default function Home() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [currentView, setCurrentView] = useState<ViewType>('production');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
