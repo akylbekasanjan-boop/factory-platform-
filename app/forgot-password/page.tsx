@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Factory, Phone, Lock, User, ArrowLeft, Check, AlertCircle, Eye, EyeOff, Send, MessageCircle } from 'lucide-react';
+import { Factory, Phone, Lock, ArrowLeft, Check, AlertCircle, Eye, EyeOff, Send } from 'lucide-react';
 
 interface User {
   phone: string;
@@ -45,19 +45,17 @@ const countries: Country[] = [
   { code: '86', name: 'Китай', flag: '🇨🇳' },
 ];
 
-const TELEGRAM_BOT_USERNAME = 'itprojectdds_bot';
-
-export default function RegisterPage() {
+export default function ForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [selectedCountry, setSelectedCountry] = useState<Country>(countries.find(c => c.code === '996') || countries[0]);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(countries[0]);
   const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [code, setCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showCountryList, setShowCountryList] = useState(false);
@@ -70,44 +68,46 @@ export default function RegisterPage() {
       return;
     }
 
-    // Check if phone already registered
+    // Check if phone exists
     const usersStr = localStorage.getItem('users');
     const users: User[] = usersStr ? JSON.parse(usersStr) : [];
-    if (users.find(u => u.phone === fullPhone)) {
-      setError('Этот номер телефона уже зарегистрирован');
+    if (!users.find(u => u.phone === fullPhone)) {
+      setError('Пользователь с таким номером не найден');
       return;
     }
 
     setError('');
     setLoading(true);
     
-    // Generate verification code
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(newCode);
     
-    // Send to Telegram (try first)
     try {
-      const telegramLink = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${fullPhone}_${newCode}`;
-      
-      // Show option to get code via Telegram
-      const useTelegram = confirm(
-        `Хотите получить код в Telegram?\n\n` +
-        `Нажмите ОК чтобы открыть бота, или ОТМЕНА чтобы показать код на экране.\n\n` +
-        `Ссылка на бота: ${telegramLink}`
-      );
-      
-      if (useTelegram) {
-        // Open Telegram bot
-        window.open(telegramLink, '_blank');
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: fullPhone,
+          message: `Код восстановления: ${newCode}`,
+          type: 'password_reset'
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGeneratedCode(newCode);
+        if (result.demo) {
+          alert(`📱 Код для восстановления (демо): ${newCode}`);
+        }
+        setStep(2);
+      } else {
+        setError(result.error || 'Ошибка отправки SMS');
       }
-    } catch (e) {
-      console.log('Telegram error:', e);
+    } catch (err) {
+      setError('Ошибка соединения с сервером');
+    } finally {
+      setLoading(false);
     }
-    
-    // Show code on screen (always as backup)
-    setLoading(false);
-    setStep(2);
-    alert(`📱 Ваш код подтверждения: ${newCode}\n\nВведите этот код ниже.`);
   };
 
   const handleVerifyCode = () => {
@@ -120,62 +120,67 @@ export default function RegisterPage() {
     setStep(3);
   };
 
-  const handleRegister = () => {
-    if (password.length < 4) {
+  const handleResetPassword = () => {
+    if (newPassword.length < 4) {
       setError('Пароль должен быть не менее 4 символов');
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (newPassword !== confirmPassword) {
       setError('Пароли не совпадают');
       return;
     }
 
     setLoading(true);
     
-    // Save user
-    const user: User = {
-      phone: fullPhone,
-      password: password,
-      name: name || 'Пользователь',
-      role: 'user',
-      createdAt: new Date().toISOString()
-    };
-    
-    // Get existing users and add new one
+    // Update password
     const usersStr = localStorage.getItem('users');
     const users: User[] = usersStr ? JSON.parse(usersStr) : [];
-    users.push(user);
-    localStorage.setItem('users', JSON.stringify(users));
+    const userIndex = users.findIndex(u => u.phone === fullPhone);
     
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('username', user.name);
-    localStorage.setItem('userPhone', user.phone);
-    localStorage.setItem('userRole', user.role);
+    if (userIndex !== -1) {
+      users[userIndex].password = newPassword;
+      localStorage.setItem('users', JSON.stringify(users));
+      setSuccess('Пароль успешно изменён!');
+      
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    } else {
+      setError('Ошибка. Попробуйте ещё раз.');
+    }
     
-    setTimeout(() => {
-      router.push('/');
-    }, 500);
+    setLoading(false);
   };
 
-  const handleResendCode = () => {
+  const handleResendCode = async () => {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(newCode);
-    setCode('');
-    alert(`📱 Новый код: ${newCode}`);
-  };
+    
+    try {
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: fullPhone,
+          message: `Код восстановления: ${newCode}`,
+          type: 'password_reset'
+        })
+      });
 
-  // Open Telegram bot
-  const openTelegramBot = () => {
-    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedCode(newCode);
-    
-    const telegramLink = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=reg_${fullPhone}_${newCode}`;
-    window.open(telegramLink, '_blank');
-    
-    // Also show code as backup
-    alert(`📱 Код для регистрации: ${newCode}\n\nТакже код отправлен в Telegram бот!`);
-    setStep(2);
+      const result = await response.json();
+
+      if (result.success) {
+        setGeneratedCode(newCode);
+        setCode('');
+        if (result.demo) {
+          alert(`📱 Новый код (демо): ${newCode}`);
+        }
+      } else {
+        setError(result.error || 'Ошибка отправки');
+      }
+    } catch (err) {
+      setError('Ошибка соединения');
+    }
   };
 
   return (
@@ -184,10 +189,10 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Factory className="w-10 h-10 text-white" />
+            <Lock className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Регистрация</h1>
-          <p className="text-gray-600 text-sm">Создайте аккаунт для входа</p>
+          <h1 className="text-xl font-bold text-gray-900">Восстановление пароля</h1>
+          <p className="text-gray-600 text-sm">Введите номер телефона для восстановления</p>
         </div>
 
         {/* Step indicator */}
@@ -195,18 +200,25 @@ export default function RegisterPage() {
           <div className={`w-3 h-3 rounded-full ${step >= 1 ? 'bg-blue-600' : 'bg-gray-300'}`} />
           <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`} />
           <div className={`w-3 h-3 rounded-full ${step >= 3 ? 'bg-blue-600' : 'bg-gray-300'}`} />
-          <div className={`w-3 h-3 rounded-full ${step >= 4 ? 'bg-blue-600' : 'bg-gray-300'}`} />
         </div>
 
-        {/* Step 1: Phone with Country Selection */}
+        {/* Success Message */}
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+            <Check className="w-6 h-6 text-green-600" />
+            <p className="text-green-700 font-medium">{success}</p>
+          </div>
+        )}
+
+        {/* Step 1: Phone */}
         {step === 1 && (
           <div className="space-y-4">
+            {/* Country Selector */}
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-2">
                 📱 Номер телефона
               </label>
               
-              {/* Country Selector */}
               <div className="relative mb-3">
                 <button
                   type="button"
@@ -222,7 +234,7 @@ export default function RegisterPage() {
                 </button>
 
                 {showCountryList && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border-3 border-gray-400 rounded-xl max-h-60 overflow-y-auto shadow-lg">
+                  <div className="absolute z-10 w-full mt-1 bg-white border-3 border-gray-400 rounded-xl max-h-48 overflow-y-auto shadow-lg">
                     {countries.map((country) => (
                       <button
                         key={country.code}
@@ -231,10 +243,10 @@ export default function RegisterPage() {
                           setSelectedCountry(country);
                           setShowCountryList(false);
                         }}
-                        className="w-full px-4 py-3 flex items-center gap-3 hover:bg-blue-50 transition-colors text-left"
+                        className="w-full px-4 py-2 flex items-center gap-3 hover:bg-blue-50 transition-colors text-left"
                       >
-                        <span className="text-2xl">{country.flag}</span>
-                        <span className="font-bold text-gray-900">+{country.code}</span>
+                        <span className="text-xl">{country.flag}</span>
+                        <span className="font-medium text-gray-900">+{country.code}</span>
                         <span className="text-gray-600 text-sm">{country.name}</span>
                       </button>
                     ))}
@@ -242,7 +254,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Phone Input */}
               <div className="relative">
                 <input
                   type="tel"
@@ -256,7 +267,7 @@ export default function RegisterPage() {
                   <Phone className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Полный номер: +{fullPhone}</p>
+              <p className="text-xs text-gray-500 mt-1">Введите номер, указанный при регистрации</p>
             </div>
 
             {error && (
@@ -276,23 +287,10 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Получить код
+                  Получить код в SMS
                 </>
               )}
             </button>
-
-            {/* Telegram Button */}
-            <button
-              onClick={openTelegramBot}
-              className="w-full bg-green-500 text-white py-3 px-4 rounded-xl hover:bg-green-600 transition-all font-bold text-md flex items-center justify-center gap-2"
-            >
-              <MessageCircle className="w-5 h-5" />
-              Получить код в Telegram
-            </button>
-            
-            <p className="text-xs text-gray-500 text-center">
-              Код придёт в Telegram бот бесплатно! 🤖
-            </p>
           </div>
         )}
 
@@ -308,7 +306,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-2">
-                🔐 Код из Telegram
+                🔐 Код из SMS
               </label>
               <input
                 type="text"
@@ -351,37 +349,19 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Step 3: Name and Password */}
+        {/* Step 3: New Password */}
         {step === 3 && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-2">
-                👤 Ваше имя
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Как к вам обращаться?"
-                  className="w-full px-4 py-4 text-lg border-3 border-gray-400 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white text-black font-bold"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <User className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-2">
-                🔐 Пароль
+                🔐 Новый пароль
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Придумайте пароль"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Придумайте новый пароль"
                   className="w-full px-4 py-4 text-lg border-3 border-gray-400 rounded-xl focus:ring-4 focus:ring-blue-300 focus:border-blue-600 transition-all bg-white text-black font-bold"
                 />
                 <button
@@ -416,8 +396,8 @@ export default function RegisterPage() {
             )}
 
             <button
-              onClick={handleRegister}
-              disabled={loading || !name || !password || !confirmPassword}
+              onClick={handleResetPassword}
+              disabled={loading || !newPassword || !confirmPassword}
               className="w-full bg-green-600 text-white py-4 px-4 rounded-xl hover:bg-green-700 transition-all font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
@@ -425,7 +405,7 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <Check className="w-6 h-6" />
-                  Создать аккаунт
+                  Сохранить новый пароль
                 </>
               )}
             </button>

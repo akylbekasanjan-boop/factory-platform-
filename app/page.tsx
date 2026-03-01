@@ -10,6 +10,9 @@ import HRView from '@/components/views/HRView';
 import FinanceView from '@/components/views/FinanceView';
 import AnalyticsView from '@/components/views/AnalyticsView';
 import ReportsView from '@/components/views/ReportsView';
+import FactoriesView from '@/components/views/FactoriesView';
+import TrainingView from '@/components/views/TrainingView';
+import SettingsView from '@/components/views/SettingsView';
 import Onboarding from '@/components/Onboarding';
 import { ViewType } from '@/lib/types';
 
@@ -44,6 +47,8 @@ export default function Home() {
         return <DashboardView />;
       case 'production':
         return <ProductionView />;
+      case 'factories':
+        return <FactoriesView />;
       case 'hr':
         return <HRView />;
       case 'finance':
@@ -52,6 +57,10 @@ export default function Home() {
         return <AnalyticsView />;
       case 'reports':
         return <ReportsView />;
+      case 'training':
+        return <TrainingView />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <ProductionView />;
     }

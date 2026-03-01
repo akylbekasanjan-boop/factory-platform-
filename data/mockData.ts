@@ -1,4 +1,4 @@
-// Mock Data for Sewing Factory Demo Platform
+// Mock Data for Sewing Factory Demo Platform - ALL DATA STARTS AT ZERO
 
 export const factories = [
   {
@@ -6,268 +6,88 @@ export const factories = [
     name: 'Фабрика Альфа',
     location: 'Москва',
     status: 'active',
-    employees: 156,
+    employees: 0,
     capacity: 200,
     machines: 45,
-    todayProduction: 1250,
-    profit: 125000,
-    efficiency: 87,
+    todayProduction: 0,
+    profit: 0,
+    efficiency: 0,
   },
   {
     id: 2,
     name: 'Фабрика Бета',
     location: 'Санкт-Петербург',
     status: 'active',
-    employees: 203,
+    employees: 0,
     capacity: 250,
     machines: 62,
-    todayProduction: 1800,
-    profit: 185000,
-    efficiency: 92,
+    todayProduction: 0,
+    profit: 0,
+    efficiency: 0,
   },
   {
     id: 3,
     name: 'Фабрика Гамма',
     location: 'Новосибирск',
     status: 'active',
-    employees: 98,
+    employees: 0,
     capacity: 150,
     machines: 32,
-    todayProduction: 750,
-    profit: 68000,
-    efficiency: 78,
+    todayProduction: 0,
+    profit: 0,
+    efficiency: 0,
   },
   {
     id: 4,
     name: 'Фабрика Дельта',
     location: 'Казань',
     status: 'active',
-    employees: 142,
+    employees: 0,
     capacity: 180,
     machines: 38,
-    todayProduction: 1100,
-    profit: 102000,
-    efficiency: 84,
+    todayProduction: 0,
+    profit: 0,
+    efficiency: 0,
   },
   {
     id: 5,
     name: 'Фабрика Эпсилон',
     location: 'Екатеринбург',
-    status: 'maintenance',
-    employees: 87,
+    status: 'active',
+    employees: 0,
     capacity: 120,
     machines: 28,
-    todayProduction: 420,
-    profit: 35000,
-    efficiency: 65,
+    todayProduction: 0,
+    profit: 0,
+    efficiency: 0,
   },
 ];
 
-export const orders = [
-  {
-    id: 'ORD-2024-001',
-    client: 'Торговая сеть А',
-    product: 'Зимняя куртка',
-    quantity: 5000,
-    completed: 4250,
-    status: 'in_progress',
-    deadline: '2024-02-15',
-    priority: 'high',
-    assignedFactories: [1, 2],
-    revenue: 750000,
-    cost: 520000,
-  },
-  {
-    id: 'ORD-2024-002',
-    client: 'Торговая сеть Б',
-    product: 'Летнее платье',
-    quantity: 3000,
-    completed: 1800,
-    status: 'in_progress',
-    deadline: '2024-02-20',
-    priority: 'medium',
-    assignedFactories: [3],
-    revenue: 450000,
-    cost: 315000,
-  },
-  {
-    id: 'ORD-2024-003',
-    client: 'Торговая сеть В',
-    product: 'Деловая рубашка',
-    quantity: 2000,
-    completed: 2000,
-    status: 'completed',
-    deadline: '2024-01-30',
-    priority: 'high',
-    assignedFactories: [1, 4],
-    revenue: 320000,
-    cost: 224000,
-  },
-  {
-    id: 'ORD-2024-004',
-    client: 'Торговая сеть А',
-    product: 'Поло',
-    quantity: 4000,
-    completed: 800,
-    status: 'delayed',
-    deadline: '2024-02-10',
-    priority: 'high',
-    assignedFactories: [5],
-    revenue: 480000,
-    cost: 336000,
-  },
-  {
-    id: 'ORD-2024-005',
-    client: 'Торговая сеть Г',
-    product: 'Футболка',
-    quantity: 6000,
-    completed: 0,
-    status: 'pending',
-    deadline: '2024-03-01',
-    priority: 'low',
-    assignedFactories: [2, 3, 4],
-    revenue: 360000,
-    cost: 252000,
-  },
-];
+export const orders: any[] = [];
 
-export const batches = [
-  {
-    id: 'BATCH-2024-001',
-    orderId: 'ORD-2024-001',
-    factoryId: 1,
-    stage: 'sewing',
-    progress: 75,
-    startedAt: '2024-01-25',
-    currentStep: 'Пошив - Этап 3/5',
-    workers: 12,
-    machines: 8,
-    defects: 3,
-    defectRate: 0.07,
-  },
-  {
-    id: 'BATCH-2024-002',
-    orderId: 'ORD-2024-001',
-    factoryId: 2,
-    stage: 'quality-check',
-    progress: 90,
-    startedAt: '2024-01-24',
-    currentStep: 'Контроль качества',
-    workers: 6,
-    machines: 0,
-    defects: 8,
-    defectRate: 0.16,
-  },
-  {
-    id: 'BATCH-2024-003',
-    orderId: 'ORD-2024-002',
-    factoryId: 3,
-    stage: 'cutting',
-    progress: 60,
-    startedAt: '2024-01-28',
-    currentStep: 'Раскрой - Этап 2/3',
-    workers: 4,
-    machines: 3,
-    defects: 1,
-    defectRate: 0.05,
-  },
-  {
-    id: 'BATCH-2024-004',
-    orderId: 'ORD-2024-004',
-    factoryId: 5,
-    stage: 'cutting',
-    progress: 30,
-    startedAt: '2024-01-30',
-    currentStep: 'Раскрой - Этап 1/3',
-    workers: 3,
-    machines: 2,
-    defects: 0,
-    defectRate: 0,
-  },
-];
+export const batches: any[] = [];
 
-export const employees = [
-  {
-    id: 1,
-    name: 'Иван Петров',
-    factoryId: 1,
-    position: 'Старший швец',
-    department: 'Производство',
-    efficiency: 94,
-    completedUnits: 2847,
-    salary: 75000,
-    bonus: 8500,
-    attendanceRate: 98,
-    totalPay: 83500,
-  },
-  {
-    id: 2,
-    name: 'Мария Иванова',
-    factoryId: 1,
-    position: 'Инспектор качества',
-    department: 'Контроль качества',
-    efficiency: 97,
-    completedUnits: 3241,
-    salary: 68000,
-    bonus: 6800,
-    attendanceRate: 99,
-    totalPay: 74800,
-  },
-  {
-    id: 3,
-    name: 'Алексей Смирнов',
-    factoryId: 2,
-    position: 'Мастер',
-    department: 'Производство',
-    efficiency: 91,
-    completedUnits: 2456,
-    salary: 82000,
-    bonus: 9100,
-    attendanceRate: 95,
-    totalPay: 91100,
-  },
-  {
-    id: 4,
-    name: 'Елена Козлова',
-    factoryId: 2,
-    position: 'Закройщица',
-    department: 'Производство',
-    efficiency: 88,
-    completedUnits: 1892,
-    salary: 72000,
-    bonus: 5760,
-    attendanceRate: 92,
-    totalPay: 77760,
-  },
-  {
-    id: 5,
-    name: 'Сергей Волков',
-    factoryId: 3,
-    position: 'Швец',
-    department: 'Производство',
-    efficiency: 82,
-    completedUnits: 1654,
-    salary: 65000,
-    bonus: 3250,
-    attendanceRate: 94,
-    totalPay: 68250,
-  },
-  {
-    id: 6,
-    name: 'Анна Морозова',
-    factoryId: 4,
-    position: 'Бригадир',
-    department: 'Производство',
-    efficiency: 95,
-    completedUnits: 2890,
-    salary: 78000,
-    bonus: 9360,
-    attendanceRate: 97,
-    totalPay: 87360,
-  },
-];
+export const employees: any[] = [];
 
-export const financialData = {
+export const financialData: {
+  today: {
+    revenue: number;
+    expenses: number;
+    profit: number;
+    cashIn: number;
+    cashOut: number;
+  };
+  thisMonth: {
+    revenue: number;
+    expenses: number;
+    profit: number;
+    cashIn: number;
+    cashOut: number;
+    projectedProfit: number;
+  };
+  transactions: any[];
+  profitHistory: Array<{ month: string; profit: number }>;
+} = {
   today: {
     revenue: 0,
     expenses: 0,
@@ -283,44 +103,19 @@ export const financialData = {
     cashOut: 0,
     projectedProfit: 0,
   },
-  transactions: [
-    { id: 1, type: 'revenue' as const, category: 'Начните работу', amount: 0, date: '01.01.2024', description: 'Добавьте первый заказ' },
-  ],
-  profitHistory: [
-    { month: 'Июл 2023', profit: 3200000 },
-    { month: 'Авг 2023', profit: 3500000 },
-    { month: 'Сен 2023', profit: 3800000 },
-    { month: 'Окт 2023', profit: 4100000 },
-    { month: 'Ноя 2023', profit: 4000000 },
-    { month: 'Дек 2023', profit: 4500000 },
-    { month: 'Янв 2024', profit: 4300000 },
-  ],
+  transactions: [],
+  profitHistory: [],
 };
 
-export const analytics = {
-  productionTrend: [
-    { day: 'Пн', units: 3200, defects: 12 },
-    { day: 'Вт', units: 3450, defects: 15 },
-    { day: 'Ср', units: 3100, defects: 10 },
-    { day: 'Чт', units: 3520, defects: 14 },
-    { day: 'Пт', units: 3300, defects: 13 },
-    { day: 'Сб', units: 2800, defects: 8 },
-    { day: 'Вс', units: 1900, defects: 5 },
-  ],
-  efficiencyByFactory: [
-    { name: 'Фабрика Альфа', efficiency: 87, trend: '+5%' },
-    { name: 'Фабрика Бета', efficiency: 92, trend: '+2%' },
-    { name: 'Фабрика Гамма', efficiency: 78, trend: '-3%' },
-    { name: 'Фабрика Дельта', efficiency: 84, trend: '+4%' },
-    { name: 'Фабрика Эпсилон', efficiency: 65, trend: '-8%' },
-  ],
-  topPerformers: [
-    { name: 'Мария Иванова', factory: 'Фабрика Альфа', score: 97.5 },
-    { name: 'Анна Морозова', factory: 'Фабрика Дельта', score: 95.2 },
-    { name: 'Иван Петров', factory: 'Фабрика Альфа', score: 94.8 },
-    { name: 'Алексей Смирнов', factory: 'Фабрика Бета', score: 91.3 },
-    { name: 'Елена Козлова', factory: 'Фабрика Бета', score: 88.6 },
-  ],
+export const analytics: {
+  productionTrend: Array<{ day: string; units: number; defects: number }>;
+  efficiencyByFactory: Array<{ name: string; efficiency: number; trend: string }>;
+  topPerformers: Array<{ name: string; factory: string; score: number }>;
+  alerts: Array<{ type: 'warning' | 'danger' | 'info' | 'success'; message: string; time: string }>;
+} = {
+  productionTrend: [],
+  efficiencyByFactory: [],
+  topPerformers: [],
   alerts: [
     { type: 'info', message: 'Добро пожаловать! Начните работу с раздела Производство', time: 'Сейчас' },
   ],
@@ -328,13 +123,13 @@ export const analytics = {
 
 export const keyMetrics = {
   totalFactories: 5,
-  totalEmployees: 686,
+  totalEmployees: 0,
   totalCapacity: 900,
-  activeOrders: 4,
+  activeOrders: 0,
   monthlyRevenue: 0,
   monthlyProfit: 0,
-  avgEfficiency: 81.2,
-  defectRate: 0.08,
+  avgEfficiency: 0,
+  defectRate: 0,
 };
 
 // User management for phone registration

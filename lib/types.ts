@@ -1,7 +1,7 @@
 // TypeScript Types for Sewing Factory Demo Platform
 
 export interface Factory {
-  id: number;
+  id: string;
   name: string;
   location: string;
   status: 'active' | 'maintenance' | 'inactive';
@@ -11,6 +11,11 @@ export interface Factory {
   todayProduction: number;
   profit: number;
   efficiency: number;
+  phone?: string;
+  email?: string;
+  manager?: string;
+  address?: string;
+  createdAt: string;
 }
 
 export interface Order {
@@ -22,15 +27,16 @@ export interface Order {
   status: 'pending' | 'in-progress' | 'completed' | 'delayed';
   deadline: string;
   priority: 'low' | 'medium' | 'high';
-  assignedFactories: number[];
+  assignedFactories: string[];
   revenue: number;
   cost: number;
+  createdAt: string;
 }
 
 export interface Batch {
   id: string;
   orderId: string;
-  factoryId: number;
+  factoryId: string;
   stage: 'cutting' | 'sewing' | 'quality-check' | 'packaging';
   progress: number;
   startedAt: string;
@@ -42,9 +48,9 @@ export interface Batch {
 }
 
 export interface Employee {
-  id: number;
+  id: string;
   name: string;
-  factoryId: number;
+  factoryId: string;
   position: string;
   department: string;
   efficiency: number;
@@ -53,15 +59,20 @@ export interface Employee {
   bonus: number;
   attendanceRate: number;
   totalPay: number;
+  phone?: string;
+  email?: string;
+  hireDate?: string;
+  createdAt?: string;
 }
 
 export interface Transaction {
-  id: number;
+  id: string;
   type: 'revenue' | 'expense';
   category: string;
   amount: number;
   date: string;
   description: string;
+  factoryId?: string;
 }
 
 export interface FinancialData {
@@ -102,4 +113,66 @@ export interface KeyMetrics {
   defectRate: number;
 }
 
-export type ViewType = 'dashboard' | 'production' | 'hr' | 'finance' | 'analytics' | 'reports';
+// Report types for accountant
+export interface Report {
+  id: string;
+  name: string;
+  type: 'financial' | 'production' | 'hr' | 'sales' | 'tax' | 'inventory';
+  category: string;
+  size: number;
+  date: string;
+  uploadedBy: string;
+  description?: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+// Training/Learning types
+export interface TrainingCourse {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  lessons: number;
+  completed: boolean;
+  progress: number;
+  category: 'basics' | 'production' | 'finance' | 'hr' | 'advanced';
+  videoUrl?: string;
+}
+
+export interface TrainingVideo {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  courseId: string;
+  order: number;
+  watched: boolean;
+}
+
+// Settings types
+export interface UserSettings {
+  companyName: string;
+  language: 'ru' | 'en';
+  timezone: string;
+  currency: string;
+  notifications: {
+    email: boolean;
+    push: boolean;
+    orders: boolean;
+    finance: boolean;
+    hr: boolean;
+  };
+  theme: 'light' | 'dark' | 'auto';
+}
+
+export interface User {
+  id: string;
+  phone: string;
+  name: string;
+  role: 'admin' | 'accountant' | 'manager' | 'employee';
+  email?: string;
+  createdAt: string;
+  factoryId?: string;
+}
+
+export type ViewType = 'dashboard' | 'production' | 'hr' | 'finance' | 'analytics' | 'reports' | 'factories' | 'training' | 'settings';

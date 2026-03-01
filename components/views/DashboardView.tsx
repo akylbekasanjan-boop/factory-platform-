@@ -1,19 +1,8 @@
 'use client';
 
-import {
-  Factory,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Activity,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Factory, Users, DollarSign, TrendingUp, Activity, Package } from 'lucide-react';
 import StatCard from '@/components/StatCard';
-import ChartCard from '@/components/ChartCard';
-import { keyMetrics, factories, orders, analytics, financialData } from '@/data/mockData';
-
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -28,266 +17,124 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function DashboardView() {
-  const productionChartData = {
-    labels: analytics.productionTrend.map((d) => {
-      const days: { [key: string]: string } = {
-        'Mon': 'Пн',
-        'Tue': 'Вт',
-        'Wed': 'Ср',
-        'Thu': 'Чт',
-        'Fri': 'Пт',
-        'Sat': 'Сб',
-        'Sun': 'Вс'
-      };
-      return days[d.day] || d.day;
-    }),
-    datasets: [
-      {
-        label: 'Произведено',
-        data: analytics.productionTrend.map((d) => d.units),
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderRadius: 6,
-      },
-      {
-        label: 'Брак',
-        data: analytics.productionTrend.map((d) => d.defects),
-        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-        borderRadius: 6,
-      },
-    ],
-  };
+  const [factories, setFactories] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
 
-  const productionChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
+  useEffect(() => {
+    const storedFactories = localStorage.getItem('factories_data');
+    if (storedFactories) setFactories(JSON.parse(storedFactories));
 
-  const profitChartData = {
-    labels: financialData.profitHistory.map((d) => {
-      const months: { [key: string]: string } = {
-        'Jul 2023': 'Июл 2023',
-        'Aug 2023': 'Авг 2023',
-        'Sep 2023': 'Сен 2023',
-        'Oct 2023': 'Окт 2023',
-        'Nov 2023': 'Ноя 2023',
-        'Dec 2023': 'Дек 2023',
-        'Jan 2024': 'Янв 2024'
-      };
-      return months[d.month] || d.month;
-    }),
-    datasets: [
-      {
-        label: 'Прибыль (₽)',
-        data: financialData.profitHistory.map((d) => d.profit),
-        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-        borderRadius: 6,
-      },
-    ],
-  };
+    const storedOrders = localStorage.getItem('orders_data');
+    if (storedOrders) setOrders(JSON.parse(storedOrders));
 
-  const profitChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: (value: any) => `${(value / 1000000).toFixed(1)}M`,
-        },
-      },
-    },
-  };
+    const storedTransactions = localStorage.getItem('finance_transactions');
+    if (storedTransactions) setTransactions(JSON.parse(storedTransactions));
+  }, []);
+
+  const activeFactories = factories.filter(f => f.status === 'active').length;
+  const totalCapacity = factories.reduce((sum, f) => sum + (f.capacity || 0), 0);
+  const totalMachines = factories.reduce((sum, f) => sum + (f.machines || 0), 0);
+
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  const inProgressOrders = orders.filter(o => o.status === 'in-progress').length;
+  const completedOrders = orders.filter(o => o.status === 'completed').length;
+
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const monthTransactions = transactions.filter(t => t.date.startsWith(thisMonth));
+  const monthRevenue = monthTransactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + t.amount, 0);
+  const monthExpenses = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const monthProfit = monthRevenue - monthExpenses;
+
+  const hasData = factories.length > 0 || orders.length > 0 || transactions.length > 0;
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Дашборд</h2>
-        <p className="text-gray-600 mt-1">
-          Добро пожаловать! Вот что происходит на ваших фабриках.
-        </p>
+        <h2 className="text-2xl font-bold text-gray-900">📊 Дашборд</h2>
+        <p className="text-gray-600 mt-1">Обзор всех показателей в реальном времени</p>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Общая выручка (месяц)"
-          value={keyMetrics.monthlyRevenue.toLocaleString('ru-RU') + ' ₽'}
-          change='+12.5%'
-          changeType='positive'
-          icon={DollarSign}
-          iconColor='text-green-600'
-          bgColor='bg-green-100'
-        />
-        <StatCard
-          title="Общая прибыль (месяц)"
-          value={keyMetrics.monthlyProfit.toLocaleString('ru-RU') + ' ₽'}
-          change='+8.3%'
-          changeType='positive'
-          icon={TrendingUp}
-          iconColor='text-blue-600'
-          bgColor='bg-blue-100'
-        />
-        <StatCard
-          title="Активные фабрики"
-          value={factories.filter((f) => f.status === 'active').length + '/' + keyMetrics.totalFactories}
-          change='+1'
-          changeType='positive'
-          icon={Factory}
-          iconColor='text-purple-600'
-          bgColor='bg-purple-100'
-        />
-        <StatCard
-          title="Всего сотрудников"
-          value={keyMetrics.totalEmployees}
-          change='+18'
-          changeType='positive'
-          icon={Users}
-          iconColor='text-orange-600'
-          bgColor='bg-orange-100'
-        />
-      </div>
-
-      {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard
-          title="Средняя эффективность"
-          value={keyMetrics.avgEfficiency + '%'}
-          change='+2.4%'
-          changeType='positive'
-          icon={Activity}
-          iconColor='text-cyan-600'
-          bgColor='bg-cyan-100'
-        />
-        <StatCard
-          title="Уровень брака"
-          value={keyMetrics.defectRate + '%'}
-          change='-0.3%'
-          changeType='positive'
-          icon={CheckCircle}
-          iconColor='text-green-600'
-          bgColor='bg-green-100'
-        />
-        <StatCard
-          title="Активные заказы"
-          value={keyMetrics.activeOrders}
-          change={orders.filter((o) => o.status === 'delayed').length + ' задержано'}
-          changeType='negative'
-          icon={Clock}
-          iconColor='text-amber-600'
-          bgColor='bg-amber-100'
-        />
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Производство (последние 7 дней)" subtitle="Произведено единиц vs брак">
-          <div className="h-80">
-            <Bar data={productionChartData} options={productionChartOptions} />
+      {!hasData ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Нет данных</h3>
+          <p className="text-gray-500">Добавьте фабрики, заказы или транзакции для отображения статистики</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title="Активные фабрики"
+              value={`${activeFactories}/${factories.length}`}
+              icon={Factory}
+              iconColor="text-blue-600"
+              bgColor="bg-blue-100"
+            />
+            <StatCard
+              title="Всего заказов"
+              value={orders.length.toString()}
+              change={pendingOrders > 0 ? `${pendingOrders} в ожидании` : undefined}
+changeType={pendingOrders > 0 ? 'neutral' : undefined}
+              icon={Package}
+              iconColor="text-purple-600"
+              bgColor="bg-purple-100"
+            />
+            <StatCard
+              title="Выручка (месяц)"
+              value={monthRevenue > 0 ? monthRevenue.toLocaleString() + ' ₽' : '0 ₽'}
+              icon={DollarSign}
+              iconColor="text-green-600"
+              bgColor="bg-green-100"
+            />
+            <StatCard
+              title="Прибыль (месяц)"
+              value={monthProfit > 0 ? monthProfit.toLocaleString() + ' ₽' : '0 ₽'}
+              icon={TrendingUp}
+              iconColor={monthProfit >= 0 ? 'text-green-600' : 'text-red-600'}
+              bgColor={monthProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}
+            />
           </div>
-        </ChartCard>
 
-        <ChartCard title="История прибыли" subtitle="Ежемесячная прибыль">
-          <div className="h-80">
-            <Bar data={profitChartData} options={profitChartOptions} />
-          </div>
-        </ChartCard>
-      </div>
-
-      {/* Alerts & Factory Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Alerts */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Последние уведомления</h3>
-          <div className="space-y-3">
-            {analytics.alerts.slice(0, 4).map((alert, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-3 p-3 rounded-lg ${
-                  alert.type === 'danger'
-                    ? 'bg-red-50 border border-red-200'
-                    : alert.type === 'warning'
-                    ? 'bg-amber-50 border border-amber-200'
-                    : alert.type === 'success'
-                    ? 'bg-green-50 border border-green-200'
-                    : 'bg-blue-50 border border-blue-200'
-                }`}
-              >
-                <AlertTriangle
-                  className={`w-5 h-5 mt-0.5 shrink-0 ${
-                    alert.type === 'danger'
-                      ? 'text-red-600'
-                      : alert.type === 'warning'
-                      ? 'text-amber-600'
-                      : alert.type === 'success'
-                      ? 'text-green-600'
-                      : 'text-blue-600'
-                  }`}
-                />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{alert.message}</p>
-                  <p className="text-xs text-gray-500 mt-1">{alert.time}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="font-semibold text-gray-900 mb-4">Статусы заказов</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">В ожидании</span>
+                  <span className="font-semibold text-gray-900">{pendingOrders}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">В работе</span>
+                  <span className="font-semibold text-blue-600">{inProgressOrders}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Завершено</span>
+                  <span className="font-semibold text-green-600">{completedOrders}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Top Performing Factories */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Производительность фабрик</h3>
-          <div className="space-y-4">
-            {factories.map((factory) => (
-              <div
-                key={factory.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-semibold text-gray-900">{factory.name}</h4>
-                    <span className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-700">
-                      {factory.location}
-                    </span>
-                    {factory.status === 'active' ? (
-                      <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
-                        Активна
-                      </span>
-                    ) : (
-                      <span className="text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">
-                        На обслуживании
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-6 text-sm text-gray-600">
-                    <span>Сотрудники: {factory.employees}</span>
-                    <span>Сегодня: {factory.todayProduction.toLocaleString()} ед.</span>
-                    <span>Прибыль: {factory.profit.toLocaleString()} ₽</span>
-                  </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <h3 className="font-semibold text-gray-900 mb-4">Производственные мощности</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Всего фабрик</span>
+                  <span className="font-semibold text-gray-900">{factories.length}</span>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">{factory.efficiency}%</p>
-                  <p className="text-sm text-gray-500">Эффективность</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Мощность (ед/день)</span>
+                  <span className="font-semibold text-gray-900">{totalCapacity}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Оборудование</span>
+                  <span className="font-semibold text-gray-900">{totalMachines} шт</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

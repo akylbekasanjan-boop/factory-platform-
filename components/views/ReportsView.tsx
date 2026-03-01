@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Upload, 
   FileText, 
@@ -13,67 +13,61 @@ import {
   Package,
   AlertCircle,
   CheckCircle,
-  BookOpen,
-  PlayCircle,
-  HelpCircle,
-  ChevronDown,
-  ChevronUp
+  FileSpreadsheet,
+  File,
+  Search,
+  Clock,
+  X,
+  Plus,
+  Printer
 } from 'lucide-react';
 
-interface UploadedFile {
+interface Report {
   id: string;
   name: string;
-  type: string;
+  type: 'financial' | 'production' | 'hr' | 'sales' | 'tax' | 'inventory';
   size: number;
   date: string;
-  category: string;
+  uploadedBy: string;
+  description: string;
+  status: 'pending' | 'approved' | 'rejected';
+  factoryId?: string;
+  period?: string;
 }
 
-interface FAQItem {
-  question: string;
-  answer: string;
-}
+const STORAGE_KEY = 'reports_data';
 
 export default function ReportsView() {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [newReport, setNewReport] = useState<Partial<Report>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const categories = [
-    { id: 'all', label: 'Все отчёты' },
-    { id: 'financial', label: '💰 Финансовые' },
-    { id: 'production', label: '🏭 Производственные' },
-    { id: 'hr', label: '👥 Кадровые' },
-    { id: 'sales', label: '📊 Продажи' },
-  ];
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      setReports(JSON.parse(stored));
+    }
+  }, []);
 
-  const faqItems: FAQItem[] = [
-    {
-      question: 'Как загрузить отчёт?',
-      answer: 'Нажмите на область загрузки или перетащите файл в неё. Поддерживаются форматы Excel, PDF, Word и изображения. После загрузки файл появится в списке.'
-    },
-    {
-      question: 'Какие форматы файлов поддерживаются?',
-      answer: 'Вы можете загружать файлы в форматах: .xlsx, .xls (Excel), .pdf, .doc, .docx (Word), .jpg, .png (изображения). Максимальный размер файла - 10 МБ.'
-    },
-    {
-      question: 'Как посмотреть финансы?',
-      answer: 'Перейдите в раздел "Финансы" в боковом меню. Там вы увидите выручку, расходы, прибыль и рентабельность. Данные обновляются в реальном времени.'
-    },
-    {
-      question: 'Как добавить новый заказ?',
-      answer: 'Перейдите в раздел "Производство". Нажмите кнопку "Добавить заказ" в правом верхнем углу. Заполните форму с данными заказа и назначьте фабрику.'
-    },
-    {
-      question: 'Как посмотреть список сотрудников?',
-      answer: 'Нажмите "Сотрудники" в боковом меню. Здесь вы найдёте информацию о всех работниках, их зарплатах, эффективности и посещаемости.'
-    },
-    {
-      question: 'Что делать если забыли пароль?',
-      answer: 'Обратитесь к администратору системы для сброса пароля. В демо-версии используйте логин: admin, пароль: admin123'
-    },
+  const saveReports = (data: Report[]) => {
+    setReports(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
+
+  const reportTypes = [
+    { id: 'all', label: 'Все типы', icon: File },
+    { id: 'financial', label: 'Финансовые', icon: DollarSign },
+    { id: 'production', label: 'Производство', icon: Package },
+    { id: 'hr', label: 'Кадровые', icon: Users },
+    { id: 'sales', label: 'Продажи', icon: FileSpreadsheet },
+    { id: 'tax', label: 'Налоговые', icon: FileText },
+    { id: 'inventory', label: 'Склад', icon: Package },
   ];
 
   const handleDrag = (e: React.DragEvent) => {
@@ -96,15 +90,28 @@ export default function ReportsView() {
   };
 
   const handleFiles = (files: FileList) => {
-    const newFiles: UploadedFile[] = Array.from(files).map((file) => ({
+    const newReports: Report[] = Array.from(files).map((file) => ({
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       name: file.name,
-      type: file.name.split('.').pop() || 'unknown',
+      type: detectType(file.name),
       size: file.size,
       date: new Date().toLocaleDateString('ru-RU'),
-      category: selectedCategory === 'all' ? 'financial' : selectedCategory,
+      uploadedBy: 'Пользователь',
+      description: '',
+      status: 'pending' as const,
     }));
-    setUploadedFiles((prev) => [...newFiles, ...prev]);
+    saveReports([...reports, ...newReports]);
+  };
+
+  const detectType = (filename: string): Report['type'] => {
+    const name = filename.toLowerCase();
+    if (name.includes('фин') || name.includes('fin') || name.includes('бух')) return 'financial';
+    if (name.includes('произв') || name.includes('prod')) return 'production';
+    if (name.includes('кадр') || name.includes('hr') || name.includes('сотрудн')) return 'hr';
+    if (name.includes('продаж') || name.includes('sale')) return 'sales';
+    if (name.includes('налог') || name.includes('tax')) return 'tax';
+    if (name.includes('склад') || name.includes('stock')) return 'inventory';
+    return 'financial';
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,53 +120,141 @@ export default function ReportsView() {
     }
   };
 
-  const deleteFile = (id: string) => {
-    setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
+  const deleteReport = (id: string) => {
+    if (confirm('Удалить этот отчёт?')) {
+      saveReports(reports.filter(r => r.id !== id));
+    }
+  };
+
+  const updateStatus = (id: string, status: Report['status']) => {
+    saveReports(reports.map(r => r.id === id ? { ...r, status } : r));
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Байт';
+    if (bytes === 0) return '0 Б';
     const k = 1024;
-    const sizes = ['Байт', 'КБ', 'МБ', 'ГБ'];
+    const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getFileIcon = (type: string) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'xlsx':
-      case 'xls':
-        return <FileText className="w-8 h-8 text-green-600" />;
-      case 'pdf':
-        return <FileText className="w-8 h-8 text-red-600" />;
-      case 'doc':
-      case 'docx':
-        return <FileText className="w-8 h-8 text-blue-600" />;
-      case 'jpg':
-      case 'png':
-        return <FileText className="w-8 h-8 text-purple-600" />;
-      default:
-        return <FileText className="w-8 h-8 text-gray-600" />;
+      case 'financial': return <DollarSign className="w-5 h-5 text-green-600" />;
+      case 'production': return <Package className="w-5 h-5 text-blue-600" />;
+      case 'hr': return <Users className="w-5 h-5 text-purple-600" />;
+      case 'sales': return <FileSpreadsheet className="w-5 h-5 text-orange-600" />;
+      case 'tax': return <FileText className="w-5 h-5 text-red-600" />;
+      case 'inventory': return <Package className="w-5 h-5 text-cyan-600" />;
+      default: return <File className="w-5 h-5 text-gray-600" />;
     }
   };
 
-  const filteredFiles = selectedCategory === 'all' 
-    ? uploadedFiles 
-    : uploadedFiles.filter(f => f.category === selectedCategory);
+  const getTypeLabel = (type: string) => {
+    const found = reportTypes.find(t => t.id === type);
+    return found ? found.label : type;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-700';
+      case 'rejected': return 'bg-red-100 text-red-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'approved': return 'Одобрен';
+      case 'rejected': return 'Отклонён';
+      case 'pending': return 'На проверке';
+      default: return status;
+    }
+  };
+
+  const filteredReports = reports.filter(r => {
+    const matchesType = selectedType === 'all' || r.type === selectedType;
+    const matchesStatus = selectedStatus === 'all' || r.status === selectedStatus;
+    const matchesSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesType && matchesStatus && matchesSearch;
+  });
+
+  const stats = {
+    total: reports.length,
+    pending: reports.filter(r => r.status === 'pending').length,
+    approved: reports.filter(r => r.status === 'approved').length,
+    financial: reports.filter(r => r.type === 'financial').length,
+  };
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">📁 Загрузка отчётов</h2>
-        <p className="text-gray-600 mt-1">
-          Загружайте и управляйте отчётами для бухгалтерии и аналитики
-        </p>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">📁 Отчёты и документы</h2>
+          <p className="text-gray-600 mt-1">Загрузка и управление документами для бухгалтерии</p>
+        </div>
+        <button
+          onClick={() => setShowUploadModal(true)}
+          className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 shadow-lg shadow-blue-600/20"
+        >
+          <Plus className="w-5 h-5" />
+          Загрузить отчёт
+        </button>
       </div>
 
-      {/* Upload Area */}
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <File className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Всего</p>
+              <p className="text-xl font-bold text-gray-900">{stats.total}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <Clock className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">На проверке</p>
+              <p className="text-xl font-bold text-yellow-600">{stats.pending}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Одобрено</p>
+              <p className="text-xl font-bold text-green-600">{stats.approved}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Финансовых</p>
+              <p className="text-xl font-bold text-gray-900">{stats.financial}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Upload Zone */}
       <div 
-        className={`bg-white rounded-xl border-2 border-dashed p-8 text-center transition-all ${
+        className={`bg-white rounded-xl border-2 border-dashed p-6 text-center transition-all ${
           dragActive 
             ? 'border-blue-500 bg-blue-50' 
             : 'border-gray-300 hover:border-blue-400'
@@ -175,90 +270,136 @@ export default function ReportsView() {
           multiple
           className="hidden"
           onChange={handleFileInput}
-          accept=".xlsx,.xls,.pdf,.doc,.docx,.jpg,.png"
+          accept=".xlsx,.xls,.pdf,.doc,.docx,.jpg,.png,.csv"
         />
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Upload className="w-8 h-8 text-blue-600" />
+          <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+            <Upload className="w-7 h-7 text-blue-600" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Перетащите файлы сюда
-          </h3>
-          <p className="text-gray-500 mb-4">
-            или нажмите для выбора файлов
-          </p>
+          <p className="text-gray-700 font-medium mb-1">Перетащите файлы сюда</p>
+          <p className="text-sm text-gray-500 mb-3">или</p>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
           >
             Выбрать файлы
           </button>
-          <p className="text-xs text-gray-400 mt-3">
-            Поддерживаются: Excel, PDF, Word, JPG, PNG (до 10 МБ)
+          <p className="text-xs text-gray-400 mt-2">
+            Excel, PDF, Word, CSV, изображения (до 10 МБ)
           </p>
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-2">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              selectedCategory === cat.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Поиск по названию..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            />
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            >
+              {reportTypes.map(type => (
+                <option key={type.id} value={type.id}>{type.label}</option>
+              ))}
+            </select>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            >
+              <option value="all">Все статусы</option>
+              <option value="pending">На проверке</option>
+              <option value="approved">Одобрено</option>
+              <option value="rejected">Отклонено</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Uploaded Files List */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="font-semibold text-gray-900">
-            Загруженные файлы ({filteredFiles.length})
-          </h3>
-        </div>
-        
-        {filteredFiles.length === 0 ? (
-          <div className="p-8 text-center">
-            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Файлы пока не загружены</p>
-            <p className="text-sm text-gray-400">Загрузите отчёты выше</p>
+      {/* Reports List */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {filteredReports.length === 0 ? (
+          <div className="p-12 text-center">
+            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Нет отчётов</h3>
+            <p className="text-gray-500">Загрузите первый документ для начала работы</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {filteredFiles.map((file) => (
-              <div key={file.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center gap-4">
-                {getFileIcon(file.type)}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{file.name}</p>
-                  <div className="flex gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {file.date}
-                    </span>
-                    <span>{formatFileSize(file.size)}</span>
-                    <span className="capitalize">{file.category}</span>
+            {filteredReports.map((report) => (
+              <div key={report.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    {getTypeIcon(report.type)}
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                    <Eye className="w-5 h-5" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                    <Download className="w-5 h-5" />
-                  </button>
-                  <button 
-                    onClick={() => deleteFile(file.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 truncate">{report.name}</p>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                        {getStatusLabel(report.status)}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-1">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {report.date}
+                      </span>
+                      <span>{formatFileSize(report.size)}</span>
+                      <span>{getTypeLabel(report.type)}</span>
+                      <span>Загрузил: {report.uploadedBy}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {report.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => updateStatus(report.id, 'approved')}
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Одобрить"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => updateStatus(report.id, 'rejected')}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Отклонить"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => setSelectedReport(report)}
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Просмотр"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="Скачать"
+                    >
+                      <Download className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => deleteReport(report.id)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Удалить"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -266,134 +407,180 @@ export default function ReportsView() {
         )}
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <DollarSign className="w-6 h-6 text-green-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Финансовых</p>
-            <p className="text-xl font-bold text-gray-900">
-              {uploadedFiles.filter(f => f.category === 'financial').length}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Package className="w-6 h-6 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Производственных</p>
-            <p className="text-xl font-bold text-gray-900">
-              {uploadedFiles.filter(f => f.category === 'production').length}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-            <Users className="w-6 h-6 text-purple-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Кадровых</p>
-            <p className="text-xl font-bold text-gray-900">
-              {uploadedFiles.filter(f => f.category === 'hr').length}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-          <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-            <FileText className="w-6 h-6 text-orange-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Всего файлов</p>
-            <p className="text-xl font-bold text-gray-900">{uploadedFiles.length}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Training Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-            <BookOpen className="w-8 h-8" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">📚 Обучение и помощь</h2>
-            <p className="text-blue-100">Изучите возможности платформы</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <a href="#" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors flex items-center gap-3">
-            <PlayCircle className="w-8 h-8" />
-            <div>
-              <p className="font-semibold">Видео-уроки</p>
-              <p className="text-sm text-blue-100">Начните здесь</p>
-            </div>
-          </a>
-          <a href="#" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors flex items-center gap-3">
-            <BookOpen className="w-8 h-8" />
-            <div>
-              <p className="font-semibold">Руководство</p>
-              <p className="text-sm text-blue-100">Подробная документация</p>
-            </div>
-          </a>
-          <a href="#" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors flex items-center gap-3">
-            <HelpCircle className="w-8 h-8" />
-            <div>
-              <p className="font-semibold">Поддержка</p>
-              <p className="text-sm text-blue-100">Связаться с нами</p>
-            </div>
-          </a>
-        </div>
-
-        {/* FAQ */}
-        <div className="bg-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-semibold mb-4">❓ Частые вопросы</h3>
-          <div className="space-y-2">
-            {faqItems.map((item, index) => (
-              <div key={index} className="bg-white/10 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
-                  className="w-full p-4 text-left flex items-center justify-between hover:bg-white/5 transition-colors"
-                >
-                  <span className="font-medium">{item.question}</span>
-                  {expandedFAQ === index ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
-                {expandedFAQ === index && (
-                  <div className="px-4 pb-4 text-blue-100">
-                    {item.answer}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Tips */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
-            <AlertCircle className="w-5 h-5 text-amber-600" />
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+            <AlertCircle className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-amber-900 mb-2">💡 Советы для начала работы</h3>
-            <ul className="text-sm text-amber-800 space-y-1">
-              <li>• Используйте демо-данные (логин: admin, пароль: admin123) для знакомства с системой</li>
-              <li>• Загружайте отчёты в разделе "Отчёты" для бухгалтерии</li>
-              <li>• Следите за финансами в разделе "Финансы" - там показана выручка, расходы и прибыль</li>
-              <li>• Добавляйте заказы в разделе "Производство"</li>
-              <li>• Просматривайте статистику сотрудников в разделе "Сотрудники"</li>
+            <h3 className="font-semibold text-blue-900 mb-2">💡 Для бухгалтерии</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Загружайте банковские выписки, счета и акты в формате Excel или PDF</li>
+              <li>• Используйте категории для сортировки документов</li>
+              <li>• Статус "На проверке" поможет отслеживать обработку документов</li>
+              <li>• Добавляйте описания для быстрого поиска нужных отчётов</li>
             </ul>
           </div>
         </div>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-900">📤 Загрузить отчёт</h3>
+              <button 
+                onClick={() => setShowUploadModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5 text-gray-900" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div 
+                className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-700 font-medium">Нажмите для выбора файла</p>
+                <p className="text-sm text-gray-500 mt-1">Excel, PDF, Word, CSV</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Тип отчёта
+                </label>
+                <select
+                  value={newReport.type || 'financial'}
+                  onChange={(e) => setNewReport({ ...newReport, type: e.target.value as Report['type'] })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                >
+                  {reportTypes.filter(t => t.id !== 'all').map(type => (
+                    <option key={type.id} value={type.id}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Описание
+                </label>
+                <textarea
+                  value={newReport.description || ''}
+                  onChange={(e) => setNewReport({ ...newReport, description: e.target.value })}
+                  placeholder="Краткое описание документа..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Период
+                </label>
+                <input
+                  type="text"
+                  value={newReport.period || ''}
+                  onChange={(e) => setNewReport({ ...newReport, period: e.target.value })}
+                  placeholder="Например: Январь 2024"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex gap-3">
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-900"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Загрузить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Report Modal */}
+      {selectedReport && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-900">📄 Детали отчёта</h3>
+              <button 
+                onClick={() => setSelectedReport(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5 text-gray-900" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                {getTypeIcon(selectedReport.type)}
+                <div>
+                  <p className="font-medium text-gray-900">{selectedReport.name}</p>
+                  <p className="text-sm text-gray-500">{getTypeLabel(selectedReport.type)}</p>
+                </div>
+                <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedReport.status)}`}>
+                  {getStatusLabel(selectedReport.status)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Размер</p>
+                  <p className="font-medium text-gray-900">{formatFileSize(selectedReport.size)}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Дата загрузки</p>
+                  <p className="font-medium text-gray-900">{selectedReport.date}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Загрузил</p>
+                  <p className="font-medium text-gray-900">{selectedReport.uploadedBy}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Период</p>
+                  <p className="font-medium text-gray-900">{selectedReport.period || 'Не указан'}</p>
+                </div>
+              </div>
+
+              {selectedReport.description && (
+                <div>
+                  <p className="text-gray-500 text-sm">Описание</p>
+                  <p className="text-gray-900">{selectedReport.description}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex gap-3">
+              <button
+                onClick={() => setSelectedReport(null)}
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-900"
+              >
+                Закрыть
+              </button>
+              <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors font-medium flex items-center gap-2 text-gray-900">
+                <Printer className="w-4 h-4" />
+                Печать
+              </button>
+              <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
+                <Download className="w-4 h-4" />
+                Скачать
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

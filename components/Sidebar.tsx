@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   FileText,
+  BookOpen,
 } from 'lucide-react';
 import { ViewType } from '@/lib/types';
 
@@ -24,11 +25,13 @@ interface SidebarProps {
 
 const menuItems: { id: ViewType; label: string; icon: any }[] = [
   { id: 'production', label: '🏭 Производство', icon: Package },
+  { id: 'factories', label: '🏢 Фабрики', icon: Factory },
   { id: 'dashboard', label: '📊 Дашборд', icon: LayoutDashboard },
   { id: 'hr', label: '👥 Сотрудники', icon: Users },
   { id: 'finance', label: '💰 Финансы', icon: DollarSign },
   { id: 'analytics', label: '📈 Аналитика', icon: BarChart3 },
   { id: 'reports', label: '📁 Отчёты', icon: FileText },
+  { id: 'training', label: '📚 Обучение', icon: BookOpen },
 ];
 
 export default function Sidebar({ currentView, onViewChange, onLogout }: SidebarProps) {
@@ -100,7 +103,14 @@ export default function Sidebar({ currentView, onViewChange, onLogout }: Sidebar
 
         {/* Bottom Actions */}
         <div className="pt-4 border-t border-gray-200 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-all">
+          <button 
+            onClick={() => onViewChange('settings')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              currentView === 'settings'
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`}
+          >
             <Settings className="w-5 h-5 shrink-0" />
             <span className="font-medium">Настройки</span>
           </button>
