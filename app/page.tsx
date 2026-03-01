@@ -10,21 +10,25 @@ import HRView from '@/components/views/HRView';
 import FinanceView from '@/components/views/FinanceView';
 import AnalyticsView from '@/components/views/AnalyticsView';
 import ReportsView from '@/components/views/ReportsView';
+import Onboarding from '@/components/Onboarding';
 import { ViewType } from '@/lib/types';
 
 export default function Home() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('production');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // Check authentication on page load
     const auth = localStorage.getItem('isAuthenticated');
     if (auth !== 'true') {
       router.push('/login');
     } else {
       setIsAuthenticated(true);
+      const completed = localStorage.getItem('onboardingCompleted');
+      if (completed !== 'true') {
+        setShowOnboarding(true);
+      }
     }
   }, [router]);
 
@@ -49,7 +53,7 @@ export default function Home() {
       case 'reports':
         return <ReportsView />;
       default:
-        return <DashboardView />;
+        return <ProductionView />;
     }
   };
 
@@ -62,21 +66,23 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar 
-        currentView={currentView} 
-        onViewChange={setCurrentView} 
-        onLogout={handleLogout}
-      />
-      
-      {/* Main content with responsive margin */}
-      <main className="md:ml-64 transition-all duration-300">
-        <Header onLogout={handleLogout} />
-        
-        <div className="p-4 md:p-6">
-          {renderView()}
-        </div>
-      </main>
-    </div>
+    <>
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar 
+          currentView={currentView} 
+          onViewChange={setCurrentView} 
+          onLogout={handleLogout}
+        />
+        <main className="md:ml-64 transition-all duration-300">
+          <Header onLogout={handleLogout} />
+          <div className="p-4 md:p-6">
+            {renderView()}
+          </div>
+        </main>
+      </div>
+      {showOnboarding && (
+        <Onboarding onComplete={() => setShowOnboarding(false)} />
+      )}
+    </>
   );
 }
