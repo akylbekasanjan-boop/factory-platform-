@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  FileText,
 } from 'lucide-react';
 import { ViewType } from '@/lib/types';
 
@@ -22,11 +23,12 @@ interface SidebarProps {
 }
 
 const menuItems: { id: ViewType; label: string; icon: any }[] = [
-  { id: 'dashboard', label: 'Дашборд', icon: LayoutDashboard },
-  { id: 'production', label: 'Производство', icon: Package },
-  { id: 'hr', label: 'Сотрудники', icon: Users },
-  { id: 'finance', label: 'Финансы', icon: DollarSign },
-  { id: 'analytics', label: 'Аналитика', icon: BarChart3 },
+  { id: 'dashboard', label: '📊 Дашборд', icon: LayoutDashboard },
+  { id: 'production', label: '🏭 Производство', icon: Package },
+  { id: 'hr', label: '👥 Сотрудники', icon: Users },
+  { id: 'finance', label: '💰 Финансы', icon: DollarSign },
+  { id: 'analytics', label: '📈 Аналитика', icon: BarChart3 },
+  { id: 'reports', label: '📁 Отчёты', icon: FileText },
 ];
 
 export default function Sidebar({ currentView, onViewChange, onLogout }: SidebarProps) {

@@ -102,4 +102,4 @@ export interface KeyMetrics {
   defectRate: number;
 }
 
-export type ViewType = 'dashboard' | 'production' | 'hr' | 'finance' | 'analytics';
+export type ViewType = 'dashboard' | 'production' | 'hr' | 'finance' | 'analytics' | 'reports';

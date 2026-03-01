@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Factory, Lock, LogIn } from 'lucide-react';
+import { Factory, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -18,11 +18,8 @@ export default function LoginPage() {
 
     // Demo credentials
     if (username === 'admin' && password === 'admin123') {
-      // Store login in localStorage
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('username', username);
-      
-      // Redirect to dashboard
       setTimeout(() => {
         router.push('/');
       }, 500);
@@ -54,11 +51,11 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Username */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-              Логин
+            <label htmlFor="username" className="block text-sm font-bold text-gray-800 mb-2">
+              👤 Логин
             </label>
             <div className="relative">
               <input
@@ -66,20 +63,23 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all bg-white"
                 placeholder="Введите логин"
+                style={{ color: '#111827', fontWeight: 500 }}
                 required
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <Lock className="w-5 h-5 text-gray-400" />
+                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
             </div>
           </div>
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Пароль
+            <label htmlFor="password" className="block text-sm font-bold text-gray-800 mb-2">
+              🔐 Пароль
             </label>
             <div className="relative">
               <input
@@ -87,12 +87,15 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all bg-white"
                 placeholder="Введите пароль"
+                style={{ color: '#111827', fontWeight: 500 }}
                 required
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <Lock className="w-5 h-5 text-gray-400" />
+                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </div>
             </div>
           </div>
@@ -108,16 +111,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-4 px-4 rounded-xl hover:bg-blue-700 transition-all font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
                 Вход в систему...
               </span>
             ) : (
               <>
-                <LogIn className="w-5 h-5" />
+                <LogIn className="w-6 h-6" />
                 Войти
               </>
             )}

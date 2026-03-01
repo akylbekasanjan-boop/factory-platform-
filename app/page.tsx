@@ -9,6 +9,7 @@ import ProductionView from '@/components/views/ProductionView';
 import HRView from '@/components/views/HRView';
 import FinanceView from '@/components/views/FinanceView';
 import AnalyticsView from '@/components/views/AnalyticsView';
+import ReportsView from '@/components/views/ReportsView';
 import { ViewType } from '@/lib/types';
 
 export default function Home() {
@@ -45,6 +46,8 @@ export default function Home() {
         return <FinanceView />;
       case 'analytics':
         return <AnalyticsView />;
+      case 'reports':
+        return <ReportsView />;
       default:
         return <DashboardView />;
     }
