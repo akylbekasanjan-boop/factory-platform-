@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Search, User, Menu, ChevronDown, LogOut, Settings, Users } from 'lucide-react';
+import { Bell, Search, User, ChevronDown, LogOut, Settings, Users } from 'lucide-react';
 
 interface HeaderProps {
   onLogout?: () => void;
@@ -79,7 +79,8 @@ export default function Header({ onLogout }: HeaderProps) {
         <div className="relative">
           <button 
             onClick={handleNotificationsClick}
-            className="relative p-2 hover:bg-gray-100 rounded-full transition-all"
+            type="button"
+            className="relative p-2 hover:bg-gray-100 rounded-full transition-all cursor-pointer"
           >
             <Bell className="w-5 h-5 text-gray-600" />
             {unreadCount > 0 && (
@@ -106,9 +107,6 @@ export default function Header({ onLogout }: HeaderProps) {
                   </div>
                 ))}
               </div>
-              <div className="px-4 py-2 bg-gray-50">
-                <button className="text-sm text-blue-600 font-medium">Показать все</button>
-              </div>
             </div>
           )}
         </div>
@@ -117,7 +115,8 @@ export default function Header({ onLogout }: HeaderProps) {
         <div className="relative">
           <button 
             onClick={handleProfileClick}
-            className="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-gray-200 hover:bg-gray-50 rounded-lg py-1 transition-colors"
+            type="button"
+            className="flex items-center gap-2 md:gap-3 pl-2 md:pl-4 border-l border-gray-200 hover:bg-gray-50 rounded-lg py-1 transition-colors cursor-pointer"
           >
             <div className="text-right hidden sm:block">
               <p className="font-medium text-gray-900 text-sm">{username}</p>
@@ -139,18 +138,23 @@ export default function Header({ onLogout }: HeaderProps) {
               <div className="py-2">
                 <button 
                   onClick={handleGoToAdmin}
+                  type="button"
                   className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3"
                 >
                   <Users className="w-4 h-4" />
                   Админка
                 </button>
-                <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3">
+                <button 
+                  type="button"
+                  className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3"
+                >
                   <Settings className="w-4 h-4" />
                   Настройки
                 </button>
                 <hr className="my-2" />
                 <button 
                   onClick={handleLogout}
+                  type="button"
                   className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-3"
                 >
                   <LogOut className="w-4 h-4" />
