@@ -135,9 +135,20 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
+        {/* Register Link */}
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Нет аккаунта?{' '}
+            <button 
+              onClick={() => router.push('/register')}
+              className="text-blue-600 font-bold hover:underline"
+            >
+              Зарегистрироваться
+            </button>
+          </p>
+        </div>
         {/* Footer */}
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="mt-4 text-center text-sm text-gray-500">
           <p>Демо-версия платформы</p>
           <p className="text-xs mt-1">© 2024 Управление Швейной Фабрикой</p>
         </div>
