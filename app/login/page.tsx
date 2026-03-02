@@ -88,8 +88,13 @@ export default function LoginPage() {
       setTimeout(() => {
         router.push('/');
       }, 500);
+    } else if (users.length === 0 && fullPhone !== '79991234567') {
+      // No users registered yet
+      setError('Аккаунт не найден. Вы ещё не регистрировались на этом устройстве.');
+      setLoading(false);
     } else {
-      setError('Неверный номер телефона или пароль');
+      setError('Неверный номер телефона или пароль. Если вы забыли пароль - нажмите "Забыли пароль?"');
+      setError('Неверный номер телефона или пароль. Если вы забыли пароль - нажмите "Забыли пароль?"');
       setLoading(false);
     }
   };
